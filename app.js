@@ -149,6 +149,10 @@ async function renderTrustStats() {
   if (statItems) statItems.textContent = State.menuItems.length || '—';
 }
 
+function skeletonCards(n = 4) {
+  return `<div class="card-grid">${'<div class="menu-card skeleton"><div class="menu-card__img"></div><div class="menu-card__body"><div class="sk-line sk-line--sm"></div><div class="sk-line sk-line--xs"></div></div></div>'.repeat(n)}</div>`;
+}
+
 // ─── Home page ────────────────────────────────────────────────
 function renderHomePreviews() {
   const menuPrev = document.getElementById('homeMenuPreview');
@@ -164,24 +168,25 @@ function renderHomePreviews() {
 }
 
 function menuCardHtml(m) {
-  const img = m.image_url ? `<img src="${esc(m.image_url)}" alt="${esc(m.name)}">` : '🍓';
+  const img = m.image_url ? `<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">` : '🍓';
+  const soldOut = !m.is_available;
   return `
-    <div class="menu-card" data-id="${m.id}" data-type="menu">
-      <div class="menu-card__img">${img}</div>
+    <div class="menu-card ${soldOut ? 'is-unavailable' : ''}" data-id="${m.id}" data-type="menu" tabindex="0" role="button" aria-label="${esc(m.name)}, ${fmt(m.price)}${soldOut ? ', sold out today' : ''}">
+      <div class="menu-card__img">${img}${soldOut ? '<span class="sold-out-badge">Sold Out Today</span>' : ''}</div>
       <div class="menu-card__body">
         <div class="menu-card__name">${esc(m.name)}</div>
         <div class="menu-card__desc">${esc(m.description || '')}</div>
         <div class="menu-card__foot">
           <span class="price">${fmt(m.price)}</span>
-          <button class="add-btn" data-add="${m.id}" data-type="menu" ${!m.is_available ? 'disabled' : ''}>${m.is_available ? '+' : '✕'}</button>
+          <button class="add-btn" data-add="${m.id}" data-type="menu" ${soldOut ? 'disabled' : ''}>${soldOut ? '✕' : '+'}</button>
         </div>
       </div>
     </div>`;
 }
 function packageCardHtml(p) {
-  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}">` : '📦';
+  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">` : '📦';
   return `
-    <div class="package-card" data-id="${p.id}" data-type="package">
+    <div class="package-card" data-id="${p.id}" data-type="package" tabindex="0" role="button" aria-label="${esc(p.name)}, ${fmt(p.price)}">
       <div class="package-card__img">${img}</div>
       <div class="package-card__body">
         <span class="badge-duration">${esc(p.duration_label)}</span>
@@ -204,9 +209,11 @@ function renderMenuPage() {
   renderMenuGrid();
 }
 function renderMenuGrid() {
-  const items = State.activeCategory === 'All'
+  const items = (State.activeCategory === 'All'
     ? State.menuItems
-    : State.menuItems.filter(m => m.category === State.activeCategory);
+    : State.menuItems.filter(m => m.category === State.activeCategory))
+    .slice()
+    .sort((a, b) => (a.is_available === b.is_available) ? 0 : (a.is_available ? -1 : 1));
   document.getElementById('menuGrid').innerHTML = items.length
     ? items.map(menuCardHtml).join('')
     : '<p class="empty-msg">No items in this category yet.</p>';
@@ -241,6 +248,11 @@ document.addEventListener('click', (e) => {
   if (card) { openItemModal(card.dataset.id, card.dataset.type); return; }
   if (e.target.closest('#cartIconBtn')) { openModal('cartModal'); return; }
 });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.menu-card, .package-card');
+  if (card) { e.preventDefault(); openItemModal(card.dataset.id, card.dataset.type); }
+});
 function findItem(id, type) {
   const list = type === 'package' ? State.packages : State.menuItems;
   return list.find(x => String(x.id) === String(id));
@@ -248,16 +260,18 @@ function findItem(id, type) {
 function openItemModal(id, type) {
   const item = findItem(id, type);
   if (!item) return;
-  const img = item.image_url ? `<img src="${esc(item.image_url)}" style="width:100%;border-radius:var(--r-md);margin-bottom:14px;">` : '';
+  const soldOut = type === 'menu' && !item.is_available;
+  const img = item.image_url ? `<img src="${esc(item.image_url)}" style="width:100%;border-radius:var(--r-md);margin-bottom:14px;${soldOut ? 'filter:grayscale(60%);opacity:.7;' : ''}">` : '';
   document.getElementById('itemModalBody').innerHTML = `
     ${img}
     ${type === 'package' ? `<span class="badge-duration">${esc(item.duration_label)}</span>` : ''}
     <h2 class="modal-title" style="margin-top:8px;">${esc(item.name)}</h2>
     <p style="color:var(--c-text-2);margin-bottom:14px;">${esc(item.description || '')}</p>
+    ${soldOut ? '<p style="color:var(--c-error);font-weight:600;font-size:.88rem;margin-bottom:14px;">😔 Sold out for today — check back tomorrow, or ask us directly if you\'re at the stall.</p>' : ''}
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <span class="price" style="font-size:1.3rem;">${fmt(item.price)}</span>
-      <button class="btn btn--primary" data-add="${item.id}" data-type="${type}" ${type==='menu' && !item.is_available ? 'disabled' : ''}>
-        ${type==='menu' && !item.is_available ? 'Out of Stock' : 'Add to Order'}
+      <button class="btn btn--primary" data-add="${item.id}" data-type="${type}" ${soldOut ? 'disabled' : ''}>
+        ${soldOut ? 'Out of Stock' : 'Add to Order'}
       </button>
     </div>`;
   openModal('itemModal');
@@ -392,6 +406,8 @@ window.confirmPayment = confirmPayment;
 // ─── Init ───────────────────────────────────────────────────
 (async function init() {
   applyTheme();
+  document.getElementById('homeMenuPreview').innerHTML = skeletonCards(4);
+  document.getElementById('homePackagePreview').innerHTML = skeletonCards(2);
   await loadData();
   renderHomePreviews();
   renderTrustStats();

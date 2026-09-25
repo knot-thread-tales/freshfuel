@@ -154,6 +154,9 @@
 .admin-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
 .admin-pill--yes { background: #e3f3e5; color: #2e7d32; }
 .admin-pill--no  { background: #f5e3e0; color: #a63d2e; }
+.admin-pill--toggle { border: none; cursor: pointer; transition: transform .1s ease, filter .1s ease; }
+.admin-pill--toggle:hover { filter: brightness(0.95); }
+.admin-pill--toggle:active { transform: scale(.94); }
 
 .admin-pill-select {
   border: none; border-radius: 20px; padding: 5px 26px 5px 10px; font-size: .78rem; font-weight: 600;

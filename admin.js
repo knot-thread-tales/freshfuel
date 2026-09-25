@@ -52,6 +52,7 @@ const TABLE_CONFIGS = {
       { key: 'sort_order', label: 'Sort Order', type: 'number', default: 0 },
     ],
     listColumns: ['category', 'name', 'price', 'is_available', 'sort_order'],
+    toggleColumns: ['is_available'],
   },
   packages: {
     label: 'Packages', order: [{ col: 'sort_order', asc: true }],
@@ -66,6 +67,7 @@ const TABLE_CONFIGS = {
       { key: 'sort_order', label: 'Sort Order', type: 'number', default: 0 },
     ],
     listColumns: ['name', 'duration_label', 'price', 'is_active', 'sort_order'],
+    toggleColumns: ['is_active'],
   },
   orders: {
     label: 'Orders', order: [{ col: 'created_at', asc: false }], readOnly: true,
@@ -225,6 +227,9 @@ function renderTable(cfg, allRows) {
       sel.addEventListener('change', () => updateOrderStatus(sel.dataset.statusId, sel.value));
     });
   }
+  body.querySelectorAll('[data-toggle-id]').forEach(btn => {
+    btn.addEventListener('click', () => toggleField(cfg, btn.dataset.toggleId, btn.dataset.toggleCol, btn.dataset.toggleVal === 'true'));
+  });
 
   const searchInput = $('#tableSearchInput');
   searchInput?.addEventListener('input', () => {
@@ -279,6 +284,11 @@ function renderCell(cfg, key, row) {
     const opts = cfg.columns.find(c => c.key === 'status').options;
     return `<select data-status-id="${row.id}" class="admin-pill-select admin-pill-select--${val}">${opts.map(o => `<option value="${o.value}" ${o.value===val?'selected':''}>${o.label}</option>`).join('')}</select>`;
   }
+  if (typeof val === 'boolean' && cfg.toggleColumns?.includes(key)) {
+    return `<button type="button" class="admin-pill admin-pill--${val ? 'yes' : 'no'} admin-pill--toggle"
+              data-toggle-id="${row.id}" data-toggle-col="${key}" data-toggle-val="${val}"
+              title="Click to mark ${val ? 'unavailable' : 'available'}">${val ? '✓ Yes' : '✕ No'}</button>`;
+  }
   if (key === 'created_at' && val) return new Date(val).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
   if (typeof val === 'boolean') return `<span class="admin-pill admin-pill--${val ? 'yes' : 'no'}">${val ? '✓ Yes' : '✕ No'}</span>`;
   if (key === 'total_amount' && val != null) return `₹${Number(val).toFixed(0)}`;
@@ -319,6 +329,17 @@ async function updateOrderStatus(id, status) {
   const { error } = await sb.from('orders').update({ status }).eq('id', id);
   if (error) return toast(error.message, 'error');
   toast('Order status updated.');
+}
+
+async function toggleField(cfg, id, col, currentVal) {
+  const newVal = !currentVal;
+  const { error } = await sb.from(State.view).update({ [col]: newVal }).eq('id', id);
+  if (error) return toast(error.message, 'error');
+  const row = State.rows.find(r => String(r.id) === String(id));
+  if (row) row[col] = newVal;
+  const label = col === 'is_available' ? (newVal ? 'available' : 'sold out') : (newVal ? 'active' : 'inactive');
+  toast(`Marked ${label}.`);
+  renderTable(cfg, State.rows);
 }
 
 // ── Add / Edit modal ──────────────────────────────────────
