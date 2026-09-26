@@ -458,6 +458,32 @@ window.copyUPI = copyUPI;
 window.confirmPayment = confirmPayment;
 window.clearCart = clearCart;
 
+// ─── PWA: service worker + install prompt ──────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => console.error('SW registration failed:', err));
+  });
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('installAppBtn');
+  if (btn) btn.hidden = false;
+});
+document.addEventListener('click', async (e) => {
+  if (!e.target.closest('#installAppBtn') || !deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') document.getElementById('installAppBtn').hidden = true;
+  deferredInstallPrompt = null;
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('installAppBtn');
+  if (btn) btn.hidden = true;
+  showToast('FreshFuel added to your home screen! 🎉');
+});
+
 // ─── Init ───────────────────────────────────────────────────
 (async function init() {
   applyTheme();
