@@ -196,6 +196,8 @@ img { max-width: 100%; display: block; }
 .cart-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--c-border); }
 .cart-line__qty { display: flex; align-items: center; gap: 8px; }
 .qty-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--c-border-dark); background: #fff; cursor: pointer; }
+.cart-line__remove { border: none; background: none; margin-left: 6px; font-size: .9rem; opacity: .6; }
+.cart-line__remove:hover { opacity: 1; }
 .cart-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.05rem; padding: 14px 0; }
 .toast { position: fixed; bottom: calc(var(--bottom-nav-h) + 20px); left: 50%; transform: translateX(-50%);
   background: var(--c-text); color: #fff; padding: 10px 20px; border-radius: var(--r-full); font-size: .88rem;

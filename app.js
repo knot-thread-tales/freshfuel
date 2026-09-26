@@ -277,6 +277,39 @@ function openItemModal(id, type) {
   openModal('itemModal');
 }
 
+// ─── Cart persistence (survives a refresh/closed tab until checkout) ─
+const CART_KEY = 'freshfuel_cart_v1';
+function saveCartToStorage() {
+  try { localStorage.setItem(CART_KEY, JSON.stringify(State.cart)); } catch { /* private mode etc — cart just won't persist */ }
+}
+function loadCartFromStorage() {
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    State.cart = raw ? JSON.parse(raw) : [];
+  } catch { State.cart = []; }
+}
+function clearCartStorage() {
+  try { localStorage.removeItem(CART_KEY); } catch { /* ignore */ }
+}
+// A cart saved yesterday might reference an item that's now deleted, renamed,
+// re-priced, or sold out — reconcile against the freshly-loaded catalog
+// rather than silently charging or WhatsApp-ing a stale price.
+function reconcileCartWithCatalog() {
+  const removed = [];
+  State.cart = State.cart.filter(c => {
+    const item = findItem(c.id, c.type);
+    if (!item) { removed.push(c.name); return false; }
+    if (c.type === 'menu' && !item.is_available) { removed.push(c.name); return false; }
+    c.price = Number(item.price); // keep the price in sync with any admin change
+    c.name = item.name;
+    return true;
+  });
+  if (removed.length) {
+    saveCartToStorage();
+    showToast(`Removed from your cart (no longer available): ${removed.join(', ')}`);
+  }
+}
+
 // ─── Cart ───────────────────────────────────────────────────
 function addToCart(id, type) {
   const item = findItem(id, type);
@@ -284,6 +317,7 @@ function addToCart(id, type) {
   const existing = State.cart.find(c => c.id === id && c.type === type);
   if (existing) existing.qty++;
   else State.cart.push({ id, type, name: item.name, price: Number(item.price), qty: 1 });
+  saveCartToStorage();
   renderCart();
   showToast(`Added ${item.name} to your order`);
   closeModal('itemModal');
@@ -293,6 +327,18 @@ function changeQty(id, type, delta) {
   if (!line) return;
   line.qty += delta;
   if (line.qty <= 0) State.cart = State.cart.filter(c => !(c.id === id && c.type === type));
+  saveCartToStorage();
+  renderCart();
+}
+function removeLine(id, type) {
+  State.cart = State.cart.filter(c => !(c.id === id && c.type === type));
+  saveCartToStorage();
+  renderCart();
+}
+function clearCart() {
+  if (State.cart.length && !confirm('Remove all items from your cart?')) return;
+  State.cart = [];
+  saveCartToStorage();
   renderCart();
 }
 function cartTotal() { return State.cart.reduce((s, c) => s + c.price * c.qty, 0); }
@@ -310,19 +356,24 @@ function renderCart() {
     <div class="cart-line">
       <div><div style="font-weight:600;">${esc(c.name)}</div><div style="font-size:.8rem;color:var(--c-text-2);">${fmt(c.price)} each</div></div>
       <div class="cart-line__qty">
-        <button class="qty-btn" data-qty="-1" data-id="${c.id}" data-type="${c.type}">−</button>
+        <button class="qty-btn" data-qty="-1" data-id="${c.id}" data-type="${c.type}" aria-label="Decrease quantity">−</button>
         <span>${c.qty}</span>
-        <button class="qty-btn" data-qty="1" data-id="${c.id}" data-type="${c.type}">+</button>
+        <button class="qty-btn" data-qty="1" data-id="${c.id}" data-type="${c.type}" aria-label="Increase quantity">+</button>
+        <button class="qty-btn cart-line__remove" data-remove="${c.id}" data-type="${c.type}" aria-label="Remove ${esc(c.name)}" title="Remove">🗑</button>
       </div>
     </div>`).join('') : '<p class="empty-msg">Your cart is empty.</p>';
 
   document.getElementById('cartModalTotal').hidden = !State.cart.length;
   document.getElementById('cartModalTotalAmt').textContent = fmt(cartTotal());
   document.getElementById('cartCheckoutBtn').hidden = !State.cart.length;
+  const clearBtn = document.getElementById('cartClearBtn');
+  if (clearBtn) clearBtn.hidden = !State.cart.length;
 }
 document.addEventListener('click', (e) => {
   const q = e.target.closest('[data-qty]');
   if (q) changeQty(q.dataset.id, q.dataset.type, Number(q.dataset.qty));
+  const rm = e.target.closest('[data-remove]');
+  if (rm) removeLine(rm.dataset.remove, rm.dataset.type);
 });
 
 // ─── Checkout: insert order, get real reference, open WhatsApp ─
@@ -370,6 +421,9 @@ Please confirm and share payment details. 🙏`
   closeModal('checkoutModal');
   closeModal('cartModal');
   showToast('Order sent! Opening WhatsApp…');
+  State.cart = [];
+  clearCartStorage();
+  renderCart();
   setTimeout(() => {
     openPaymentModal(total);
     window.open(`https://wa.me/${getWhatsapp()}?text=${msg}`, '_blank');
@@ -402,13 +456,16 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.copyUPI = copyUPI;
 window.confirmPayment = confirmPayment;
+window.clearCart = clearCart;
 
 // ─── Init ───────────────────────────────────────────────────
 (async function init() {
   applyTheme();
+  loadCartFromStorage();
   document.getElementById('homeMenuPreview').innerHTML = skeletonCards(4);
   document.getElementById('homePackagePreview').innerHTML = skeletonCards(2);
   await loadData();
+  reconcileCartWithCatalog();
   renderHomePreviews();
   renderTrustStats();
   renderCart();

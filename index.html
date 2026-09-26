@@ -168,7 +168,10 @@
 <div id="cartModal" class="modal" role="dialog" aria-modal="true">
   <div class="modal-sheet">
     <button class="modal-close" onclick="closeModal('cartModal')">&times;</button>
-    <h2 class="modal-title">Your Order</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-right:30px;">
+      <h2 class="modal-title" style="margin-bottom:0;">Your Order</h2>
+      <button id="cartClearBtn" class="btn btn--outline btn--sm" onclick="clearCart()" hidden>Clear</button>
+    </div>
     <div id="cartLines"><p class="empty-msg">Your cart is empty.</p></div>
     <div class="cart-total" id="cartModalTotal" hidden><span>Total</span><span id="cartModalTotalAmt">₹0</span></div>
     <button class="btn btn--primary w-full" id="cartCheckoutBtn" onclick="openModal('checkoutModal')" hidden>Checkout via WhatsApp →</button>
