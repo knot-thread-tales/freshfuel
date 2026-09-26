@@ -69,6 +69,18 @@ function applyTheme() {
   root.setProperty('--c-border-dark', c.borderDark);
 }
 
+// ─── Fallback icons (used only when an item has no photo yet) ───
+// Relevant per category rather than one generic fruit/box emoji for everything.
+const ICONS = {
+  'Classic Bowls': '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/></svg>', // citrus-slice
+  'Protein Bowls': '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><path d="M9 12h6"/></svg>', // dumbbell
+  'Detox & Green': '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4-1-8-5-8-11 6 0 10 4 10 10 0 .3 0 .7-.05 1z"/><path d="M12 21c0-9 4-13 9-15-1 8-4 13-9 15z"/></svg>', // leaf
+  'Add-ons': '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>', // plus-in-circle
+  _menuDefault: '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21c0-5 3.5-9 8-9s8 4 8 9"/><path d="M12 12V3"/><path d="M9 6c0-2 1.3-3 3-3s3 1 3 3"/></svg>', // bowl (matches Menu tab)
+  package: '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>', // box (matches Packages tab)
+};
+function categoryIcon(category) { return ICONS[category] || ICONS._menuDefault; }
+
 function fmt(n) { return `${CONFIG.business.currency}${Number(n).toFixed(0)}`; }
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
@@ -168,7 +180,7 @@ function renderHomePreviews() {
 }
 
 function menuCardHtml(m) {
-  const img = m.image_url ? `<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">` : '🍓';
+  const img = m.image_url ? `<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">` : categoryIcon(m.category);
   const soldOut = !m.is_available;
   return `
     <div class="menu-card ${soldOut ? 'is-unavailable' : ''}" data-id="${m.id}" data-type="menu" tabindex="0" role="button" aria-label="${esc(m.name)}, ${fmt(m.price)}${soldOut ? ', sold out today' : ''}">
@@ -184,7 +196,7 @@ function menuCardHtml(m) {
     </div>`;
 }
 function packageCardHtml(p) {
-  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">` : '📦';
+  const img = p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy">` : ICONS.package;
   return `
     <div class="package-card" data-id="${p.id}" data-type="package" tabindex="0" role="button" aria-label="${esc(p.name)}, ${fmt(p.price)}">
       <div class="package-card__img">${img}</div>
@@ -402,7 +414,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
 
   const lines = items.map(i => `• ${i.name} x${i.qty} — ${fmt(i.price * i.qty)}`).join('\n');
   const msg = encodeURIComponent(
-`Hi FreshFuel! 🍓 I'd like to place an order.
+`Hi FreshFuel! 🥣 I'd like to place an order.
 
 *Order Reference:* ${orderRef}
 

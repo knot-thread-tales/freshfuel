@@ -54,7 +54,7 @@ img { max-width: 100%; display: block; }
   .app-bar { padding-left: calc((100vw - var(--max-w)) / 2); padding-right: calc((100vw - var(--max-w)) / 2); }
 }
 .app-bar__brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--c-primary-dark); }
-.app-bar__brand .emoji { font-size: 1.3rem; }
+.brand-logo-img { width: 28px; height: 28px; border-radius: 8px; display: block; }
 .app-bar__actions { display: flex; gap: 10px; align-items: center; }
 .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--c-bg);
   display: flex; align-items: center; justify-content: center; color: var(--c-text); cursor: pointer; position: relative; }
@@ -126,6 +126,7 @@ img { max-width: 100%; display: block; }
   aspect-ratio: 4/3; background: linear-gradient(135deg, #eaf6ee, #fff4e2);
   display: flex; align-items: center; justify-content: center; font-size: 2.4rem; overflow: hidden; position: relative;
 }
+.menu-card__img svg, .package-card__img svg { width: 38%; height: 38%; stroke: var(--c-primary); stroke-width: 1.6; fill: none; opacity: .55; }
 .menu-card.is-unavailable .menu-card__img img { filter: grayscale(70%); }
 .sold-out-badge {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;

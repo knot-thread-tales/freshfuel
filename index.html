@@ -45,7 +45,7 @@
 <body>
 
 <header class="app-bar">
-  <div class="app-bar__brand"><span class="emoji">🍓</span> FreshFuel</div>
+  <div class="app-bar__brand"><img src="icons/icon-192.png" alt="FreshFuel logo" class="brand-logo-img"> FreshFuel</div>
   <nav class="app-bar__nav">
     <a href="#/" data-route="/" class="active">Home</a>
     <a href="#/menu" data-route="/menu">Menu</a>
@@ -74,8 +74,8 @@
         <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Fresh Cut Daily</div></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap;">
-        <a href="#/menu" data-route="/menu" class="btn btn--primary btn--lg">🍓 Order a Bowl</a>
-        <a href="#/packages" data-route="/packages" class="btn btn--outline btn--lg">📦 See Plans</a>
+        <a href="#/menu" data-route="/menu" class="btn btn--primary btn--lg"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21c0-5 3.5-9 8-9s8 4 8 9"/><path d="M12 12V3"/><path d="M9 6c0-2 1.3-3 3-3s3 1 3 3"/></svg> Order a Bowl</a>
+        <a href="#/packages" data-route="/packages" class="btn btn--outline btn--lg"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg> See Plans</a>
       </div>
     </div>
 
@@ -85,7 +85,7 @@
     </div>
 
     <div class="section">
-      <div class="section-head"><h2>📦 Wellness Plans</h2><a href="#/packages" data-route="/packages" style="font-size:.85rem;color:var(--c-primary);font-weight:700;">See all →</a></div>
+      <div class="section-head"><h2 style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg> Wellness Plans</h2><a href="#/packages" data-route="/packages" style="font-size:.85rem;color:var(--c-primary);font-weight:700;">See all →</a></div>
       <div class="package-list" id="homePackagePreview"><p class="empty-msg">Loading plans…</p></div>
     </div>
   </section>

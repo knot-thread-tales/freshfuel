@@ -15,7 +15,7 @@
   <!-- ── Login ─────────────────────────────────── -->
   <div id="loginScreen" class="admin-login">
     <form id="loginForm" class="admin-login__card">
-      <h1>🍓 FreshFuel</h1>
+      <h1 style="display:flex;align-items:center;justify-content:center;gap:10px;"><img src="icons/icon-192.png" alt="FreshFuel logo" style="width:32px;height:32px;border-radius:8px;"> FreshFuel</h1>
       <p>Admin sign in</p>
       <input type="email" id="loginEmail" placeholder="Email" required autocomplete="username">
       <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
@@ -30,12 +30,12 @@
     <button id="menuToggle" class="admin-menu-toggle" aria-label="Toggle menu">☰</button>
     <aside class="admin-sidebar">
       <div class="admin-sidebar__brand">
-        <span>🍓 FreshFuel Admin</span>
+        <span style="display:flex;align-items:center;gap:8px;"><img src="icons/icon-192.png" alt="" style="width:22px;height:22px;border-radius:6px;"> FreshFuel Admin</span>
         <button id="sidebarClose" class="admin-sidebar__close" aria-label="Close menu">✕</button>
       </div>
       <nav id="adminNav" class="admin-sidebar__nav">
         <button data-view="menu_items" class="admin-nav-btn active"><span>🥣</span> Menu Items</button>
-        <button data-view="packages" class="admin-nav-btn"><span>📦</span> Packages</button>
+        <button data-view="packages" class="admin-nav-btn"><span><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span> Packages</button>
         <button data-view="orders" class="admin-nav-btn"><span>🧾</span> Orders</button>
         <button data-view="business_settings" class="admin-nav-btn"><span>⚙️</span> Settings</button>
       </nav>
